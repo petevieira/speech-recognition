@@ -9,71 +9,71 @@ Ears::Ears()
 	//this is a very basic langauge model that comes with pocketsphinx
 	//use the setLMdir and setDICdir to set your own language models
     std::string temp = MODELDIR;
-    lmDir = temp  +"/lm/en/turtle.DMP";
-	dicDir = temp +"/lm/en/turtle.dic";	
+    _lang_model_dir = temp  +"/lm/en/turtle.DMP";
+    _dictionary_dir = temp +"/lm/en/turtle.dic";
 }
 
 Ears::~Ears()
 {
-	fclose(fh);
-    ps_free(ps);
+    fclose(_fh);
+    ps_free(_ps);
 }
 
 //this will give us access to pocket sphinx's cmd_ln.c interpreter
-int Ears::init()
+int Ears::Init()
 {
 	//create a config object
-	config = cmd_ln_init(NULL, ps_args(), TRUE,
+    _config = cmd_ln_init(NULL, ps_args(), TRUE,
 			     "-hmm", MODELDIR "/hmm/en_US/hub4wsj_sc_8k",
-			     "-lm", lmDir.c_str(),
-			     "-dict", dicDir.c_str(),
+                 "-lm", _lang_model_dir.c_str(),
+                 "-dict", _dictionary_dir.c_str(),
 			     NULL);
-	if (config == NULL)
+    if (_config == NULL)
 		return 1;
 		
 	//initialize the decoder	
-	ps = ps_init(config);
-	if (ps == NULL)
+    _ps = ps_init(_config);
+    if (_ps == NULL)
 		return 1;
 	
 	return 0;
 }
 
 //the ability to set the location for the models will allow new models to be composed and replaced with ease
-int Ears::setLMdir(std::string _lmDir)
+int Ears::SetLanguageModelDir(std::string lang_model_dir)
 {
     std::string temp = MODELDIR;
 	
-	lmDir = temp+ _lmDir;
-	if(lmDir.c_str()==NULL)
+    _lang_model_dir = temp + lang_model_dir;
+    if(_lang_model_dir.c_str() == NULL)
 		return -1;
 		
-	updateModel();//update the LM if config already exists
+    UpdateModel(); //update the LM if config already exists
 	return 1;
 }
 
-int Ears::setDICdir(std::string _dicDir)
+int Ears::SetDictionaryDir(std::string dictionary_dir)
 {
 	std::string temp = MODELDIR;
 	
-	dicDir = temp+ _dicDir;
-	if(dicDir.c_str() ==NULL)
+    _dictionary_dir = temp+ dictionary_dir;
+    if(_dictionary_dir.c_str() == NULL)
 		return -1;
 	
-	updateModel(); //update Dictionary if config object already exists 
+    UpdateModel(); //update Dictionary if config object already exists
 	return 1;
 }
 
 
-int Ears::updateModel()
+int Ears::UpdateModel()
 {
 	//if init has not been called we don't need to restart pocketSphinx
-	if(config == NULL)
+    if(_config == NULL)
 		return 1;
 	
-	ps_free(ps); //free the decoder
+    ps_free(_ps); //free the decoder
 	
-	init(); //call init to load the decoder with the new language model.
+    Init(); //call init to load the decoder with the new language model.
 	
 }
 
@@ -81,34 +81,31 @@ int Ears::updateModel()
 
 //enter the location of the file to be interpreted. 
 //returns the string that was recognized by the decoder
-std::string Ears::rawToString(const char * pathToraw)
+std::string Ears::RawToString(const char * pathToraw)
 {
 	std::string er = "error";
 	//open the file stream for reading in binary mode
-	fh = fopen(pathToraw, "rb");
-	if (fh == NULL) {
+    _fh = fopen(pathToraw, "rb");
+    if (_fh == NULL) {
 		perror("Failed to open raw file");
 		return er;
 	}
 	
 	//decode the binary audio files and return the number of samples recovered
-	rv = ps_decode_raw(ps, fh, "myUttId", -1);//decoder,file handler, utterance ID, -1 = read to end of file
-	if (rv < 0)
+    _rv = ps_decode_raw(_ps, _fh, "myUttId", -1);//decoder,file handler, utterance ID, -1 = read to end of file
+    if (_rv < 0)
 		return er;
 		
 	//get the hypothesis on the output 	
-	hyp = ps_get_hyp(ps, &score, &uttid);
+    _hyp = ps_get_hyp(_ps, &_score, &_uttid);
 	
-	if (hyp == NULL)//if none of our known words match what was said send a flag for the handler to pick up
+    if (_hyp == NULL)//if none of our known words match what was said send a flag for the handler to pick up
 		{
 			return WNF;
 		}
 	
-	return hyp;	
+    return _hyp;
 }
-
-
-
 
 //use this for real time decoding via a microphone. Hardware settings are handled in the hardware node 
 //and assigned through the logic node

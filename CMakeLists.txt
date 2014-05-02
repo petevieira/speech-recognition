@@ -43,7 +43,7 @@ add_definitions(-DMODELDIR="/usr/local/share/pocketsphinx/model")
 #-------------------------
 #     BUILD LIBRARIES
 #-------------------------
-add_library(ears src/ears.cpp include/ears.h)
+add_library(ears src/ears.cc include/ears.h)
 target_link_libraries(ears pocketsphinx sphinxbase sphinxad)
 
 #-------------------------
@@ -52,6 +52,12 @@ target_link_libraries(ears pocketsphinx sphinxbase sphinxad)
 add_executable(hello-world_sphinx "src/hello-world_sphinx.c")
 target_link_libraries(hello-world_sphinx pocketsphinx sphinxbase sphinxad)
 
-add_executable(test-text2speech "src/test-text2speech.cpp")
-add_executable(alsa-test "src/alsa-test.cpp")
+add_executable(testEars "src/testEars.cc")
+target_link_libraries(testEars ears)
+
+add_executable(testContinuous "src/testContinuous.c")
+target_link_libraries(testContinuous pocketsphinx sphinxbase sphinxad)
+
+add_executable(test-text2speech "src/test-text2speech.cc")
+add_executable(alsa-test "src/alsa-test.cc")
 target_link_libraries(alsa-test asound)
