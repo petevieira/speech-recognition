@@ -34,8 +34,21 @@ Run pocketsphinx_continuous to test the installation. When it says "Ready..." sa
 
 Miscellaneous
 =============
-
 List audio devices
 
     pacmd list-source
 
+
+Project Layout
+==============
+Processes
+
+  - speech_recogntion
+  - speech_generation
+
+Messages
+
+  - recognized speech
+  - speech to generate
+  - command from speech recognition
+  
