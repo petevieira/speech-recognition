@@ -9,13 +9,13 @@ int main(int argc, char** argv)
     snd_pcm_stream_t stream = SND_PCM_STREAM_PLAYBACK;  // Playback stream
     snd_pcm_hw_params_t* hwparams;  // HW info struct
     char* pcm_name; // Name of the PCM device
-    pcm_name = strdup("hw:0,0"); // Initialize pcm_name
+    pcm_name = strdup("hw:1,0"); // Initialize pcm_name
     snd_pcm_hw_params_alloca(&hwparams); // Allocate hw params struct on stack
 
     // Open PCM
     if(snd_pcm_open(&pcm_handle, pcm_name, stream, 0) < 0)
     {
-        fprintf(stderr, "Erro opening PCM device %s\n", pcm_name);
+        fprintf(stderr, "Error opening PCM device %s\n", pcm_name);
         return(-1);
     }
 

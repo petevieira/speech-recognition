@@ -5,7 +5,8 @@
 
 #define FALSE 0
 #define TRUE  1
- 
+//#define MODELDIR "/usr/local/share/pocketsphinx/model"
+
 int main(int argc, char** argv)
 {
     ps_decoder_t *ps;
@@ -17,17 +18,20 @@ int main(int argc, char** argv)
                          "-dict", MODELDIR "/lm/en/turtle.dic",
                          NULL);
 
-    if(NULL == config)
+    if(NULL == config) {
+        printf("Got null config");
         return 1;
+    }
 
     // initialize the decoder
     ps = ps_init(config);
-    if(NULL == ps)
+    if(NULL == ps) {
+        printf("Got null ps");
         return 1;
+    }
 
     // open audio file
-    FILE *fh;
-    fh = fopen("../resources/goforward.raw", "rb");
+    FILE *fh = fopen("../resources/goforward.raw", "rb");
     if(NULL == fh)
     {
         perror("Failed to open goforward.raw");
@@ -36,23 +40,29 @@ int main(int argc, char** argv)
 
     // decode the audio file
     int rv = ps_decode_raw(ps, fh, "goforward", -1);
-    if(rv < 0)
+    if(rv < 0) {
+        perror("Error decoding raw");
         return 1;
+    }
 
     // get the hypothesis
     char const *hyp, *uttid;
     int32_t score;
 
     hyp = ps_get_hyp(ps, &score, &uttid);
-    if(NULL == hyp)
+    if(NULL == hyp) {
+        perror("No hypothesis");
         return 1;
+    }
     printf("Recognized: %s\n", hyp);
 
     // start the utterance
     fseek(fh, 0, SEEK_SET);
     rv = ps_start_utt(ps, "goforward");
-    if(rv < 0)
+    if(rv < 0) {
+        perror("Error starting utterance");
         return 1;
+    }
 
     // read 512 samples at a time from the file
     // and feed them to the decoder
@@ -66,13 +76,17 @@ int main(int argc, char** argv)
 
     // mark end of utterance
     rv = ps_end_utt(ps);
-    if(rv < 0)
+    if(rv < 0) {
+        perror("Error ending utterance");
         return 1;
+    }
 
     // get hypothesis string
     hyp = ps_get_hyp(ps, &score, &uttid);
-    if(NULL == hyp)
+    if(NULL == hyp) {
+        perror("Error getting hypothesis");
         return 1;
+    }
     printf("Recognized: %s\n", hyp);
 
     // clean up
@@ -80,7 +94,4 @@ int main(int argc, char** argv)
     ps_free(ps);
 
     return 0;
-
-
-
 }
